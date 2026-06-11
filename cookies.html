@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Preferências — salvas em cookies</title>
+  <style>
+    /* ── reset & base ─────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F7F6F2;
+      --surface: #FFFFFF;
+      --surface2: #F0EEE9;
+      --border: #E2DFD8;
+      --text: #1A1916;
+      --muted: #7A786F;
+      --accent: #3D5AF1;
+      --accent-light: #EBF0FF;
+      --accent-dark: #2A3FAD;
+      --success: #1A7A50;
+      --success-bg: #E6F5EE;
+      --danger: #B03025;
+      --danger-bg: #FCF0EF;
+      --radius: 10px;
+      --radius-sm: 6px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.05);
+      --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      --font-mono: 'Cascadia Code', 'Fira Code', 'Courier New', monospace;
+    }
+
+    [data-theme="dark"] {
+      --bg: #111110;
+      --surface: #1C1C1A;
+      --surface2: #242422;
+      --border: #2E2E2B;
+      --text: #F0EEE8;
+      --muted: #888780;
+      --accent: #6E87FF;
+      --accent-light: #1A2040;
+      --accent-dark: #9AABFF;
+      --success: #4CC68A;
+      --success-bg: #0D2A1C;
+      --danger: #F0786A;
+      --danger-bg: #2A1210;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* ── layout ───────────────────────────────── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo { font-size: 15px; font-weight: 600; letter-spacing: -0.02em; color: var(--text); }
+    .logo span { color: var(--accent); }
+
+    .main { max-width: 640px; margin: 0 auto; padding: 32px 20px; width: 100%; }
+
+    h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 6px; }
+    .subtitle { font-size: 14px; color: var(--muted); margin-bottom: 28px; }
+
+    /* ── card ─────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+    }
+    .card-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    /* ── form elements ────────────────────────── */
+    .field { margin-bottom: 14px; }
+    .field:last-child { margin-bottom: 0; }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    select {
+      width: 100%;
+      padding: 9px 12px;
+      font-size: 14px;
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      outline: none;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    select:focus { border-color: var(--accent); background: var(--surface); }
+
+    /* ── toggle ───────────────────────────────── */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .toggle-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .toggle-info { font-size: 13px; }
+    .toggle-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    .switch { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+    .switch input { display: none; }
+    .slider {
+      position: absolute; inset: 0; cursor: pointer;
+      background: var(--border);
+      border-radius: 99px;
+      transition: background 0.2s;
+    }
+    .slider::before {
+      content: '';
+      position: absolute;
+      width: 16px; height: 16px;
+      left: 3px; top: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .switch input:checked + .slider { background: var(--accent); }
+    .switch input:checked + .slider::before { transform: translateX(18px); }
+
+    /* ── botões ───────────────────────────────── */
+    .btn-row { display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 18px; font-size: 14px; font-weight: 500;
+      font-family: var(--font); border-radius: var(--radius-sm);
+      cursor: pointer; border: 1px solid var(--border);
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.98); }
+
+    .btn-primary {
+      background: var(--accent); color: white; border-color: var(--accent);
+    }
+    .btn-primary:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
+
+    .btn-secondary { background: var(--surface2); color: var(--text); }
+    .btn-secondary:hover { background: var(--border); }
+
+    .btn-danger { background: var(--danger-bg); color: var(--danger); border-color: var(--danger); }
+    .btn-danger:hover { background: var(--danger); color: white; }
+
+    /* ── toast ────────────────────────────────── */
+    #toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(60px);
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 10px 18px;
+      font-size: 13px; font-weight: 500; color: var(--text);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      opacity: 0; transition: all 0.25s; white-space: nowrap; z-index: 99;
+      display: flex; align-items: center; gap: 8px;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #toast .dot { width: 7px; height: 7px; border-radius: 50%; }
+    #toast.ok .dot { background: var(--success); }
+    #toast.err .dot { background: var(--danger); }
+
+    /* ── cookie viewer ────────────────────────── */
+    .cookie-viewer {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--muted);
+      min-height: 54px;
+      line-height: 1.7;
+      word-break: break-all;
+    }
+    .cookie-entry { display: block; }
+    .cookie-key { color: var(--accent); font-weight: 600; }
+    .cookie-eq { color: var(--muted); }
+    .cookie-val { color: var(--text); }
+
+    /* ── theme button ─────────────────────────── */
+    .theme-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 12px; font-size: 13px; font-weight: 500;
+      font-family: var(--font); border-radius: var(--radius-sm);
+      cursor: pointer; border: 1px solid var(--border);
+      background: var(--surface2); color: var(--text);
+      transition: background 0.15s;
+    }
+    .theme-btn:hover { background: var(--border); }
+
+    /* ── footer ───────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 16px;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    /* ── tags de expiração ────────────────────── */
+    .exp-tag {
+      display: inline-block; font-size: 11px; padding: 2px 8px;
+      border-radius: 99px; margin-left: 6px;
+      background: var(--accent-light); color: var(--accent);
+      font-weight: 500; vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <span class="logo">pref<span>.</span>app</span>
+  <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">
+    <span id="themeIcon">🌙</span> <span id="themeLabel">Tema escuro</span>
+  </button>
+</header>
+
+<main class="main">
+  <h1>Suas preferências</h1>
+  <p class="subtitle">Tudo aqui é salvo em cookies — persiste ao recarregar a página.</p>
+
+  <!-- Perfil -->
+  <div class="card">
+    <p class="card-title">Perfil</p>
+    <div class="field">
+      <label for="nome">Nome</label>
+      <input type="text" id="nome" placeholder="Seu nome" autocomplete="off" />
+    </div>
+    <div class="field">
+      <label for="email">E-mail</label>
+      <input type="email" id="email" placeholder="voce@exemplo.com" autocomplete="off" />
+    </div>
+    <div class="field">
+      <label for="idioma">Idioma preferido</label>
+      <select id="idioma">
+        <option value="pt">Português</option>
+        <option value="en">English</option>
+        <option value="es">Español</option>
+        <option value="fr">Français</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Notificações -->
+  <div class="card">
+    <p class="card-title">Notificações</p>
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <div>E-mails de novidades</div>
+        <div class="toggle-desc">Atualizações e lançamentos</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="notif-email" /><span class="slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <div>Notificações push</div>
+        <div class="toggle-desc">Alertas no navegador</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="notif-push" /><span class="slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <div>Resumo semanal</div>
+        <div class="toggle-desc">Todo domingo às 9h</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="notif-resumo" /><span class="slider"></span></label>
+    </div>
+  </div>
+
+  <!-- Botões -->
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="salvar()">💾 Salvar em cookies</button>
+    <button class="btn btn-secondary" onclick="recarregar()">↺ Recarregar</button>
+    <button class="btn btn-danger" onclick="limpar()">✕ Limpar tudo</button>
+  </div>
+
+  <!-- Visualizador de cookies -->
+  <div class="card" style="margin-top: 28px;">
+    <p class="card-title">
+      Cookies armazenados <span class="exp-tag" id="expTag">—</span>
+    </p>
+    <div class="cookie-viewer" id="cookieViewer">
+      <span style="color:var(--muted); font-style:italic;">nenhum cookie salvo ainda</span>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Dados salvos apenas localmente no seu navegador via <code>document.cookie</code>
+</footer>
+
+<div id="toast"><span class="dot"></span><span id="toastMsg"></span></div>
+
+<script>
+  /* ── utilitários de cookie ─────────────────── */
+  function setCookie(name, value, days) {
+    const exp = new Date();
+    exp.setDate(exp.getDate() + days);
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${exp.toUTCString()}; path=/; SameSite=Lax`;
+  }
+
+  function getCookie(name) {
+    for (const c of document.cookie.split(';')) {
+      const [k, v] = c.trim().split('=');
+      if (k === name) return decodeURIComponent(v || '');
+    }
+    return null;
+  }
+
+  function deleteCookie(name) {
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
+  }
+
+  /* ── lista de cookies da app ───────────────── */
+  const CAMPOS = ['nome', 'email', 'idioma', 'notif-email', 'notif-push', 'notif-resumo', 'tema'];
+  const DIAS = 30;
+
+  /* ── carregar ao iniciar ───────────────────── */
+  function carregar() {
+    const nome = getCookie('nome');
+    const email = getCookie('email');
+    const idioma = getCookie('idioma');
+
+    if (nome)   document.getElementById('nome').value = nome;
+    if (email)  document.getElementById('email').value = email;
+    if (idioma) document.getElementById('idioma').value = idioma;
+
+    document.getElementById('notif-email').checked  = getCookie('notif-email')  === '1';
+    document.getElementById('notif-push').checked   = getCookie('notif-push')   === '1';
+    document.getElementById('notif-resumo').checked = getCookie('notif-resumo') === '1';
+
+    const tema = getCookie('tema');
+    if (tema === 'dark') aplicarTema('dark', false);
+
+    atualizarViewer();
+  }
+
+  /* ── salvar todos os campos ────────────────── */
+  function salvar() {
+    setCookie('nome',         document.getElementById('nome').value.trim(),  DIAS);
+    setCookie('email',        document.getElementById('email').value.trim(), DIAS);
+    setCookie('idioma',       document.getElementById('idioma').value,       DIAS);
+    setCookie('notif-email',  document.getElementById('notif-email').checked  ? '1' : '0', DIAS);
+    setCookie('notif-push',   document.getElementById('notif-push').checked   ? '1' : '0', DIAS);
+    setCookie('notif-resumo', document.getElementById('notif-resumo').checked ? '1' : '0', DIAS);
+
+    atualizarViewer();
+    toast('Preferências salvas por ' + DIAS + ' dias', 'ok');
+  }
+
+  /* ── limpar tudo ───────────────────────────── */
+  function limpar() {
+    CAMPOS.forEach(deleteCookie);
+    document.getElementById('nome').value = '';
+    document.getElementById('email').value = '';
+    document.getElementById('idioma').value = 'pt';
+    ['notif-email','notif-push','notif-resumo'].forEach(id => document.getElementById(id).checked = false);
+    aplicarTema('light', false);
+    atualizarViewer();
+    toast('Todos os cookies foram removidos', 'err');
+  }
+
+  /* ── recarregar da página ──────────────────── */
+  function recarregar() {
+    window.location.reload();
+  }
+
+  /* ── atualizar o viewer ────────────────────── */
+  function atualizarViewer() {
+    const viewer = document.getElementById('cookieViewer');
+    const appCookies = CAMPOS
+      .map(k => ({ k, v: getCookie(k) }))
+      .filter(c => c.v !== null);
+
+    if (appCookies.length === 0) {
+      viewer.innerHTML = '<span style="color:var(--muted); font-style:italic;">nenhum cookie salvo ainda</span>';
+      document.getElementById('expTag').textContent = '—';
+      return;
+    }
+
+    viewer.innerHTML = appCookies.map(({ k, v }) =>
+      `<span class="cookie-entry"><span class="cookie-key">${k}</span><span class="cookie-eq">=</span><span class="cookie-val">${v || '(vazio)'}</span></span>`
+    ).join('');
+
+    const exp = new Date();
+    exp.setDate(exp.getDate() + DIAS);
+    document.getElementById('expTag').textContent = 'expira em ' + DIAS + ' dias';
+  }
+
+  /* ── tema escuro/claro ─────────────────────── */
+  function aplicarTema(tema, salvar = true) {
+    document.documentElement.setAttribute('data-theme', tema);
+    const escuro = tema === 'dark';
+    document.getElementById('themeIcon').textContent  = escuro ? '☀️' : '🌙';
+    document.getElementById('themeLabel').textContent = escuro ? 'Tema claro' : 'Tema escuro';
+    if (salvar) setCookie('tema', tema, DIAS);
+  }
+
+  function toggleTheme() {
+    const atual = document.documentElement.getAttribute('data-theme');
+    const novoTema = atual === 'dark' ? 'light' : 'dark';
+    aplicarTema(novoTema, true);
+    atualizarViewer();
+    toast('Tema ' + (novoTema === 'dark' ? 'escuro' : 'claro') + ' ativado', 'ok');
+  }
+
+  /* ── toast ─────────────────────────────────── */
+  let toastTimer;
+  function toast(msg, tipo = 'ok') {
+    const el = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    el.className = 'show ' + tipo;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.className = '', 2800);
+  }
+
+  /* ── init ───────────────────────────────────── */
+  carregar();
+</script>
+</body>
+</html>
